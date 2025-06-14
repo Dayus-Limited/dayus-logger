@@ -31,7 +31,6 @@ export interface LoggerOptions {
 let logger: winston.Logger | null = null;
 
 export function createLogger(options: LoggerOptions): winston.Logger {
-    console.log(options)
     const { jobName, appName, lokiUrl, logLevel = 'info', nodeEnv = 'development' } = options;
 
     logger = winston.createLogger({
