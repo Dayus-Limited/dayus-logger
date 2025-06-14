@@ -5,6 +5,21 @@ import os from 'os';
 
 dotenv.config();
 
+// Validate required environment variables
+const requiredVars = ['JOB_NAME', 'APP_NAME'];
+const missingVars = requiredVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+}
+
+const env: LoggerOptions = {
+    jobName: process.env.JOB_NAME!,
+    appName: process.env.APP_NAME!,
+    lokiUrl: process.env.LOKI_URL,
+    logLevel: process.env.LOG_LEVEL,
+    nodeEnv: process.env.NODE_ENV
+};
+
 export interface LoggerOptions {
     jobName: string;
     appName: string;
@@ -16,6 +31,7 @@ export interface LoggerOptions {
 let logger: winston.Logger | null = null;
 
 export function createLogger(options: LoggerOptions): winston.Logger {
+    console.log(options)
     const { jobName, appName, lokiUrl, logLevel = 'info', nodeEnv = 'development' } = options;
 
     logger = winston.createLogger({
@@ -61,7 +77,13 @@ export function createLogger(options: LoggerOptions): winston.Logger {
 
 export function getLogger(): winston.Logger {
     if (!logger) {
-        throw new Error('Logger not initialized. Call createLogger() first.');
+        logger = createLogger({
+            jobName: env.jobName,
+            appName: env.appName,
+            lokiUrl: env.lokiUrl,
+            logLevel: env.logLevel,
+            nodeEnv: env.nodeEnv
+        });
     }
     return logger;
 }
