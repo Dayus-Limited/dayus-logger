@@ -72,17 +72,33 @@ export const logger = {
         });
         console.log(message, attributes);
     },
-    error: (message: string, attributes?: Record<string, string | number | boolean | undefined>) => {
+    error: (message: string | Error, attributes?: Record<string, string | number | boolean | undefined>) => {
         const logger = logs.getLogger(`${process.env.APP_NAME}`);
+
+        let body: string;
+        let errorAttributes: Record<string, string | number | boolean | undefined> = {};
+
+        if (message instanceof Error) {
+            body = message.message;
+            errorAttributes = {
+                'error.name': message.name,
+                'error.message': message.message,
+                'error.stack': message.stack,
+                ...attributes
+            };
+        } else {
+            body = message;
+            errorAttributes = attributes || {};
+        }
 
         logger.emit({
             severityNumber: SeverityNumber.ERROR,
             severityText: 'ERROR',
-            body: message,
-            attributes: attributes
+            body: body,
+            attributes: errorAttributes
 
         });
-        console.log(message, attributes);
+        console.log(body, errorAttributes);
     },
 
     warn: (message: string, attributes?: Record<string, string | number | boolean | undefined>) => {
